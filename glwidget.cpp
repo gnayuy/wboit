@@ -28,7 +28,7 @@ GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent)
     vaos = 0;
     vbos = 0;
 
-    fb = 0;
+    fbo = 0;
     db = 0;
 
     rt = 0;
@@ -74,7 +74,7 @@ GLWidget::~GLWidget()
     glDeleteBuffers(1, &vbo);
     glDeleteVertexArrays(1, &vao);
 
-    glDeleteFramebuffers(1, &fb);
+    glDeleteFramebuffers(1, &fbo);
     glDeleteTextures(1, &rt);
     glDeleteRenderbuffers(1, &db);
 }
@@ -182,7 +182,7 @@ void GLWidget::initializeGL()
         //
         int linked;
         glGetProgramiv(shaderProgram1->programId(), GL_LINK_STATUS, &linked);
-        std::cout<<"shaders are linked "<<linked<<endl;
+        std::cout<<"shaders are linked "<<linked<<std::endl;
 
         //
         glBindVertexArray(0);
@@ -204,8 +204,8 @@ void GLWidget::initializeGL()
     glBindVertexArray(0);
 
     //
-    glGenFramebuffers(1, &fb);
-    glBindFramebuffer(GL_FRAMEBUFFER, fb);
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
     glGenTextures(1, &rt);
     glBindTexture(GL_TEXTURE_2D, rt);
@@ -223,7 +223,7 @@ void GLWidget::resizeGL( int w, int h )
     projection = glm::perspective(glm::pi<float>() * 0.25f, (float)w/(float)h, 0.1f, 1000.0f);
 
     //
-    glBindFramebuffer(GL_FRAMEBUFFER, fb);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, w, h, 0, GL_RGB, GL_FLOAT, 0);
 
