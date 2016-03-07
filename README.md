@@ -1,6 +1,6 @@
 # wboit
 
-Here provides a Qt implementation of the weighted, blended OIT [1] that uses the Qt4.8 under OpenGL 4.1. Shaders are contributed by Nicolas P. Rougier [2]. Morgan's blogs [3,4] help understand his approach.
+Here provides a Qt implementation of the weighted, blended OIT [1] that uses the Qt4.8 with OpenGL 2.1 and GLSL 1.20 or above. Shaders are contributed by Nicolas P. Rougier [2]. Morgan's blogs [3,4] help understand his approach.
 
 ### References
 
