@@ -1,4 +1,3 @@
-// created 10/27/2015 by Yang Yu <gnayuy@gmail.com>
 
 #include "glwidget.h"
 #include <iostream>
@@ -28,12 +27,13 @@ GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent)
     vaos = 0;
     vbos = 0;
 
-    fbo = 0;
+    fb = 0;
     db = 0;
 
-    rt = 0;
+    accumTexture = 0;
+    revealageTexture = 0;
 
-    installEventFilter(this); //
+    //installEventFilter(this);
 
     m_MousePressed = false;
     b_rot = false;
@@ -43,7 +43,7 @@ GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent)
 
     m_frameCount = 0;
 
-    mouseSpeed = 0.04; // smaller means speed faster
+    mouseSpeed = 8; //
 }
 
 GLWidget::~GLWidget()
@@ -74,8 +74,9 @@ GLWidget::~GLWidget()
     glDeleteBuffers(1, &vbo);
     glDeleteVertexArrays(1, &vao);
 
-    glDeleteFramebuffers(1, &fbo);
-    glDeleteTextures(1, &rt);
+    glDeleteFramebuffers(1, &fb);
+    glDeleteTextures(1, &accumTexture);
+    glDeleteTextures(1, &revealageTexture);
     glDeleteRenderbuffers(1, &db);
 }
 
@@ -123,8 +124,12 @@ void GLWidget::initializeGL()
         qWarning() << shaderProgram1->log() << endl;
         close();
     }
+//    if (!shaderProgram1->bind())
+//    {
+//        qWarning() << shaderProgram1->log() << endl;
+//        close();
+//    }
 
-    //
     shaderProgram2 = new QGLShaderProgram;
     shaderProgram2->addShader(compVertShader);
     shaderProgram2->addShader(compFragShader);
@@ -134,6 +139,17 @@ void GLWidget::initializeGL()
         qWarning() << shaderProgram2->log() << endl;
         close();
     }
+
+    //
+//    int linked;
+//    glGetProgramiv(shaderProgram1->programId(), GL_LINK_STATUS, &linked);
+//    qDebug()<<"check shader link error"<<linked;
+
+//    if (!shaderProgram2->bind())
+//    {
+//        qWarning() << shaderProgram2->log() << endl;
+//        close();
+//    }
 
     //
     glEnable(GL_DEPTH_TEST);
@@ -180,11 +196,6 @@ void GLWidget::initializeGL()
         glVertexAttribPointer( loc, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(sizeof(glm::vec3)*quads[i].positions.size()));
 
         //
-        int linked;
-        glGetProgramiv(shaderProgram1->programId(), GL_LINK_STATUS, &linked);
-        std::cout<<"shaders are linked "<<linked<<std::endl;
-
-        //
         glBindVertexArray(0);
     }
 
@@ -204,11 +215,14 @@ void GLWidget::initializeGL()
     glBindVertexArray(0);
 
     //
-    glGenFramebuffers(1, &fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glGenFramebuffers(1, &fb);
+    glBindFramebuffer(GL_FRAMEBUFFER, fb);
 
-    glGenTextures(1, &rt);
-    glBindTexture(GL_TEXTURE_2D, rt);
+    glGenTextures(1, &accumTexture);
+    glBindTexture(GL_TEXTURE_2D, accumTexture);
+
+    glGenTextures(1, &revealageTexture);
+    glBindTexture(GL_TEXTURE_2D, revealageTexture);
 
     glGenRenderbuffers(1, &db);
     glBindRenderbuffer(GL_RENDERBUFFER, db);
@@ -218,25 +232,51 @@ void GLWidget::initializeGL()
 
 void GLWidget::resizeGL( int w, int h )
 {
+    weight = w;
+    height = h;
+
     glViewport(0,0,w,h);
     //projection = glm::perspective(glm::radians(45.0f), (float)w/(float)h, 0.3f, 100.0f);
     projection = glm::perspective(glm::pi<float>() * 0.25f, (float)w/(float)h, 0.1f, 1000.0f);
 
     //
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fb);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, w, h, 0, GL_RGB, GL_FLOAT, 0);
+    //
+    glBindTexture(GL_TEXTURE_2D, accumTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, w, h, 0, GL_RGBA, GL_FLOAT, 0);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, accumTexture, 0);
+
+    //
+    glBindTexture(GL_TEXTURE_2D, revealageTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, w, h, 0, GL_RED, GL_FLOAT, 0);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, revealageTexture, 0);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    //
+    glBindRenderbuffer(GL_RENDERBUFFER, db);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, db);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt, 0);
+    // Set the list of draw buffers.
+//    GLenum buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
+//    glDrawBuffers(2, (GLenum*)buffers);
 
+    //
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -249,28 +289,25 @@ void GLWidget::paintGL()
     }
 
     // FPS
-    if (m_frameCount == 0)
-    {
-        m_time.start();
-    }
-    else
-    {
-        printf("FPS is %f\n", m_frameCount / (float(m_time.elapsed()) / 1000.0f));
-    }
-    m_frameCount++;
+//    if (m_frameCount == 0)
+//    {
+//        m_time.start();
+//    }
+//    else
+//    {
+//        printf("FPS is %f\n", m_frameCount / (float(m_time.elapsed()) / 1000.0f));
+//    }
+//    m_frameCount++;
 
     //
-    glClearColor(0.75,0.75,0.75,1.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     if(b_rot)
     {
-        model = glm::rotate(model, glm::radians(xRot), glm::vec3(1.0f,0.0f,0.0f));
-        model = glm::rotate(model, glm::radians(yRot), glm::vec3(0.0f,1.0f,0.0f));
-        model = glm::rotate(model, glm::radians(zRot), glm::vec3(0.0f,0.0f,1.0f));
+        model = glm::rotate(model, glm::radians(xRot/16), glm::vec3(1.0f,0.0f,0.0f));
+        model = glm::rotate(model, glm::radians(yRot/16), glm::vec3(0.0f,1.0f,0.0f));
+        model = glm::rotate(model, glm::radians(zRot/16), glm::vec3(0.0f,0.0f,1.0f));
     }
 
-    std::cout<<"model "<<glm::to_string(model)<<" scale "<<scale<<" rot "<<b_rot<<std::endl;
+    //std::cout<<"model "<<glm::to_string(model)<<" scale "<<scale<<" rot "<<b_rot<<std::endl;
 
     if(b_scale)
     {
@@ -279,14 +316,34 @@ void GLWidget::paintGL()
 
     b_scale = false;
 
+    //
+    /// opaque surfaces
+    //
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); // screen background
+    float alpha = 0.5;
+    glClearColor(alpha,alpha,alpha,1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // opaque objects rendering
-    //glDepthMask(GL_TRUE);
-    //glDisable(GL_BLEND);
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
 
+    //
+    /// transparent surfaces
+    //
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &currentFB); // in this case, currentFB = 0
 
-    // transparent objects rendering
-    // 1st pass
+    glBindFramebuffer(GL_FRAMEBUFFER, fb); // render to an offscreen framebuffer
+    glClearColor(0.0f,0.0f,0.0f,1.0f);
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_MULTISAMPLE);
+
+    glDepthMask(GL_FALSE);
+    glEnable(GL_BLEND);
+
+    // 3D Transparency Pass
     if (!shaderProgram1->bind())
     {
         qWarning() << shaderProgram1->log() << endl;
@@ -299,37 +356,31 @@ void GLWidget::paintGL()
     loc = glGetUniformLocation(shaderProgram1->programId(), "projection");
     glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(projection) );
 
-
     //
-    glDepthMask (GL_FALSE);
-    glEnable(GL_BLEND);
-
-    glClearColor(0.5,0.5,0.5,1);
-    glClear(GL_COLOR_BUFFER_BIT);
-
     glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+
     //glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
-
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // with primitives sorted from farthest to nearest, for rendering antialiased points and lines in arbitrary order
-
     //glBlendFunc (GL_SRC_ALPHA_SATURATE, GL_ONE); // with polygons sorted from nearest to farthest
     //glShadeModel (GL_FLAT);
-
     //glBlendFunc(GL_ONE,  GL_ZERO);
     //glBlendEquation(GL_FUNC_ADD);
 
-
+    //
     for(int i=0; i<nQuad; i++)
     {
-        glBindVertexArray( vaos[i] );
-        glDrawArrays( GL_TRIANGLES, 0, 6 );
+        glBindVertexArray(vaos[i]);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
     }
 
-    //glDepthMask (GL_TRUE);
-    glDisable (GL_BLEND);
+    // set the framebuffer back
+    glBindFramebuffer(GL_FRAMEBUFFER, currentFB);
 
-    // 2nd pass
+    glDepthMask (GL_TRUE);
+    //glDisable (GL_BLEND);
+
+    // 2D Compositing Pass
     if (!shaderProgram2->bind())
     {
         qWarning() << shaderProgram2->log() << endl;
@@ -338,10 +389,14 @@ void GLWidget::paintGL()
 
     //
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, rt);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, accumTexture);
     loc = glGetUniformLocation(shaderProgram2->programId(), "accumTexture");
     glUniform1i(loc, 0);
 
+    glActiveTexture(GL_TEXTURE1);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, revealageTexture);
     loc = glGetUniformLocation(shaderProgram2->programId(), "revealageTexture");
     glUniform1i(loc, 1);
 
@@ -349,10 +404,21 @@ void GLWidget::paintGL()
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
 
+    //
     glBindVertexArray( vao );
     glDrawArrays( GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
 
+    //
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
+
+    //
     glDisable (GL_BLEND);
 
 }
@@ -409,14 +475,21 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e)
         }
         lastPos = e->pos();
 
-        if(xRot>360) xRot -= 360;
-        if(xRot<-360) xRot += 360;
+        // normalize
+        while (xRot < 0)
+            xRot += 360 * 16;
+        while (xRot > 360 * 16)
+            xRot -= 360 * 16;
 
-        if(yRot>360) yRot -= 360;
-        if(yRot<-360) yRot += 360;
+        while (yRot < 0)
+            yRot += 360 * 16;
+        while (yRot > 360 * 16)
+            yRot -= 360 * 16;
 
-        if(zRot>360) zRot -= 360;
-        if(zRot<-360) zRot += 360;
+        while (zRot < 0)
+            zRot += 360 * 16;
+        while (zRot > 360 * 16)
+            zRot -= 360 * 16;
 
         b_rot = true;
     }

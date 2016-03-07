@@ -1,6 +1,7 @@
-// created 10/27/2015 by Yang Yu <gnayuy@gmail.com>
 
 #include "mesh.h"
+
+//#include <GL/glew.h>
 
 #include <QtOpenGL>
 #include <QtCore>
@@ -13,8 +14,9 @@
 #define glGenVertexArrays glGenVertexArraysAPPLE
 #define glBindVertexArray glBindVertexArrayAPPLE
 #define glDeleteVertexArrays glDeleteVertexArraysAPPLE
-#define  GL_RGBA32F  GL_RGBA32F_ARB
-#define  GL_RGB32F  GL_RGB32F_ARB
+#define GL_RGBA32F  GL_RGBA32F_ARB
+#define GL_RGB32F  GL_RGB32F_ARB
+#define GL_RGBA16F GL_RGBA16F_ARB
 #endif
 
 //
@@ -68,11 +70,13 @@ private:
 
     GLuint *vaos; // vertex array object(s)
     GLuint *vbos; // vertex buffer object(s)
-
-    GLuint vao, vbo; // vao and vbo for 2nd pass
-    GLuint fbo; // frame buffer object
+    GLuint fb; // frame buffer
     GLuint db; // depth buffer
-    GLuint rt; // rendered texture
+    GLuint accumTexture, revealageTexture; // rendered texture
+
+    GLint currentFB;
+
+    GLuint vao, vbo; // composite
 
     int nQuad;
     GLuint loc;
@@ -83,5 +87,7 @@ private:
     int m_frameCount;
 
     float mouseSpeed;
+
+    int weight, height;
 };
 
