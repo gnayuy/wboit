@@ -356,6 +356,11 @@ void GLWidget::paintGL()
     loc = glGetUniformLocation(shaderProgram1->programId(), "projection");
     glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(projection) );
 
+//    std::cout<<"red    z ... "<<glm::to_string( view * model * glm::vec4(-1,-1,-1, 1) )<< std::endl;
+//    std::cout<<"yellow z ... "<<glm::to_string( view * model * glm::vec4(-1,-1,0, 1) )<< std::endl;
+//    std::cout<<"blue   z ... "<<glm::to_string( view * model * glm::vec4(-1,-1,1, 1) )<< std::endl;
+//    qDebug()<<" ... ";
+
     //
     glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
 

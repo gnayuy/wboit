@@ -21,9 +21,9 @@ int main(int argc, char **argv)
     widget.resize(640, 480);
 
     // gray
-//    widget.addQuad(glm::vec3(-1,-1,-1), glm::vec3(+1,-1,-1), glm::vec3(+1,+1,-1), glm::vec3(-1,+1,-1), glm::vec4(0.1,0.1,0.1,0.05));
-//    widget.addQuad(glm::vec3(-1,-1, 0), glm::vec3(+1,-1, 0), glm::vec3(+1,+1, 0), glm::vec3(-1,+1, 0), glm::vec4(0.05,0.05,0.05,0.05));
-//    widget.addQuad(glm::vec3(-1,-1,+1), glm::vec3(+1,-1,+1), glm::vec3(+1,+1,+1), glm::vec3(-1,+1,+1), glm::vec4(0.02,0.02,0.02,0.05));
+//    widget.addQuad(glm::vec3(-1,-1,-1), glm::vec3(+1,-1,-1), glm::vec3(+1,+1,-1), glm::vec3(-1,+1,-1), glm::vec4(0.1,0.1,0.1,0.75));
+//    widget.addQuad(glm::vec3(-1,-1, 0), glm::vec3(+1,-1, 0), glm::vec3(+1,+1, 0), glm::vec3(-1,+1, 0), glm::vec4(0.05,0.05,0.05,0.75));
+//    widget.addQuad(glm::vec3(-1,-1,+1), glm::vec3(+1,-1,+1), glm::vec3(+1,+1,+1), glm::vec3(-1,+1,+1), glm::vec4(0.02,0.02,0.02,0.75));
 
     // color
     widget.addQuad(glm::vec3(-1,-1,-1), glm::vec3(+1,-1,-1), glm::vec3(+1,+1,-1), glm::vec3(-1,+1,-1), glm::vec4(1.0,0.0,0.0,0.75));

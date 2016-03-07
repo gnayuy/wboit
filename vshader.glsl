@@ -13,7 +13,12 @@ void main()
 {
     color = vColor;
 
-    gl_Position = projection * modelview * vec4(vPosition,1.0);
+    //
+    vec4 eyePosition = modelview * vec4(vPosition, 1.0);
 
-    depth = -(modelview * vec4(vPosition,1.0)).z;
+    // homogeneous space coordinates
+    gl_Position = projection * eyePosition;
+
+    // depth n eye/camera space coordinates
+    depth = -(eyePosition.z);
 }
