@@ -27,7 +27,7 @@ int main(int argc, char **argv)
 
     // color
     widget.addQuad(glm::vec3(-1,-1,-1), glm::vec3(+1,-1,-1), glm::vec3(+1,+1,-1), glm::vec3(-1,+1,-1), glm::vec4(1.0,0.0,0.0,0.75));
-    widget.addQuad(glm::vec3(-1,-1, 0), glm::vec3(+1,-1, 0), glm::vec3(+1,+1, 0), glm::vec3(-1,+1, 0), glm::vec4(1.0,1.0,0.0,0.75));
+    widget.addQuad(glm::vec3(-1,-1, 0), glm::vec3(+1,-1, 0), glm::vec3(+1,+1, 0), glm::vec3(-1,+1, 0), glm::vec4(0.0,1.0,0.0,0.75));
     widget.addQuad(glm::vec3(-1,-1,+1), glm::vec3(+1,-1,+1), glm::vec3(+1,+1,+1), glm::vec3(-1,+1,+1), glm::vec4(0.0,0.0,1.0,0.75));
 
     widget.show();

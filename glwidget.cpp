@@ -386,8 +386,7 @@ void GLWidget::paintGL()
     glClearDepth(1.0f);
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glDepthMask (GL_TRUE);
-    //glDisable (GL_BLEND);
+    //glDepthMask (GL_TRUE); //
 
     // 2D Compositing Pass
     if (!shaderProgram2->bind())
@@ -428,7 +427,9 @@ void GLWidget::paintGL()
     glDisable(GL_TEXTURE_2D);
 
     //
-    glDisable (GL_BLEND);
+    glDisable(GL_TEXTURE_2D);
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
 
 }
 
