@@ -334,6 +334,7 @@ void GLWidget::paintGL()
 
     glBindFramebuffer(GL_FRAMEBUFFER, fb); // render to an offscreen framebuffer
     glClearColor(0.0f,0.0f,0.0f,1.0f);
+    glClearDepth(1.0f);
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glEnable(GL_DEPTH_TEST);
@@ -356,9 +357,9 @@ void GLWidget::paintGL()
     loc = glGetUniformLocation(shaderProgram1->programId(), "projection");
     glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(projection) );
 
-//    std::cout<<"red    z ... "<<glm::to_string( view * model * glm::vec4(-1,-1,-1, 1) )<< std::endl;
-//    std::cout<<"yellow z ... "<<glm::to_string( view * model * glm::vec4(-1,-1,0, 1) )<< std::endl;
-//    std::cout<<"blue   z ... "<<glm::to_string( view * model * glm::vec4(-1,-1,1, 1) )<< std::endl;
+//    std::cout<<"red    depth ... "<<glm::to_string( view * model * glm::vec4(-1,-1,-1, 1) )<< std::endl;
+//    std::cout<<"yellow depth ... "<<glm::to_string( view * model * glm::vec4(-1,-1,0, 1) )<< std::endl;
+//    std::cout<<"blue   depth ... "<<glm::to_string( view * model * glm::vec4(-1,-1,1, 1) )<< std::endl;
 //    qDebug()<<" ... ";
 
     //
@@ -376,11 +377,14 @@ void GLWidget::paintGL()
     {
         glBindVertexArray(vaos[i]);
         glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);
     }
+    glBindVertexArray(0);
 
     // set the framebuffer back
     glBindFramebuffer(GL_FRAMEBUFFER, currentFB);
+    glClearColor(alpha,alpha,alpha,1.0);
+    glClearDepth(1.0f);
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glDepthMask (GL_TRUE);
     //glDisable (GL_BLEND);
