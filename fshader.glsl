@@ -3,8 +3,7 @@
 varying vec4 color;
 varying float depth;
 
-void main()
-{
+void main() {
     float alpha = color.a;
 
     // the object lies between -40 and -60 z coordinates

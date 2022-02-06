@@ -1,9 +1,12 @@
 # qt example of OIT
 
-QT += core gui opengl
-
+CONFIG += c++17
+QT += core gui opengl widgets openglwidgets
 TARGET = wboit
 TEMPLATE = app
+
+
+INCLUDEPATH += "C:/Users/jaime/Desktop/glm/"
 
 SOURCES += \
     mesh.cpp \
