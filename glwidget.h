@@ -1,31 +1,21 @@
+#pragma once
+#include <QOpenGLFunctions_4_5_Core>
+#include <QOpenGLShader>
+#include <QOpenGLShaderProgram>
+#include <QPoint>
+#include <QtCore>
+#include <QtGui>
+#include <QtOpenGL>
+#include <QtOpenGLWidgets/QOpenGLWidget>
+#include <glm.hpp>
 
 #include "mesh.h"
 
-//#include <GL/glew.h>
-
-#include <QtOpenGL>
-#include <QtCore>
-#include <QtGui>
-
-#include <QGLShader>
-#include <QGLShaderProgram>
-
-#ifdef __APPLE__
-#define glGenVertexArrays glGenVertexArraysAPPLE
-#define glBindVertexArray glBindVertexArrayAPPLE
-#define glDeleteVertexArrays glDeleteVertexArraysAPPLE
-#define GL_RGBA32F  GL_RGBA32F_ARB
-#define GL_RGB32F  GL_RGB32F_ARB
-#define GL_RGBA16F GL_RGBA16F_ARB
-#endif
-
-//
-class GLWidget : public QGLWidget
-{
+class GLWidget : public QOpenGLWidget {
     Q_OBJECT
 
-public:
-    GLWidget(QWidget *parent);
+   public:
+    GLWidget();
     ~GLWidget();
 
     void initializeGL();
@@ -37,23 +27,21 @@ public:
     void mouseMoveEvent(QMouseEvent *);
     void wheelEvent(QWheelEvent *);
 
-public:
+   public:
     void addQuad(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 d, glm::vec4 color);
 
-public slots:
+   public:
+    QOpenGLShader *vertexShader;
+    QOpenGLShader *fragmentShader;
+    QOpenGLShader *compVertShader;
+    QOpenGLShader *compFragShader;
+    QOpenGLShaderProgram *shaderProgram1, *shaderProgram2;
+    QOpenGLFunctions_4_5_Core *f;
 
-public:
-    QGLShader *vertexShader;
-    QGLShader *fragmentShader;
-    QGLShader *compVertShader;
-    QGLShader *compFragShader;
-    QGLShaderProgram *shaderProgram1, *shaderProgram2;
-
-private:
+   private:
     bool m_MousePressed;
     bool b_rot, b_scale;
 
-private:
     QPoint lastPos;
 
     float xRot;
@@ -68,15 +56,15 @@ private:
 
     std::vector<Quadrilateral> quads;
 
-    GLuint *vaos; // vertex array object(s)
-    GLuint *vbos; // vertex buffer object(s)
-    GLuint fb; // frame buffer
-    GLuint db; // depth buffer
-    GLuint accumTexture, revealageTexture; // rendered texture
+    GLuint *vaos;                           // vertex array object(s)
+    GLuint *vbos;                           // vertex buffer object(s)
+    GLuint fb;                              // frame buffer
+    GLuint db;                              // depth buffer
+    GLuint accumTexture, revealageTexture;  // rendered texture
 
     GLint currentFB;
 
-    GLuint vao, vbo; // composite
+    GLuint vao, vbo;  // composite
 
     int nQuad;
     GLuint loc;
@@ -90,4 +78,3 @@ private:
 
     int weight, height;
 };
-

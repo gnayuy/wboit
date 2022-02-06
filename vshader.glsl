@@ -13,7 +13,6 @@ void main()
 {
     color = vColor;
 
-    //
     vec4 eyePosition = modelview * vec4(vPosition, 1.0);
 
     // homogeneous space coordinates

@@ -1,24 +1,20 @@
-// created 10/27/2015 by Yang Yu <gnayuy@gmail.com>
-
-#include <string>
+#pragma once
 #include <fstream>
-#include <sstream>
 #include <iostream>
+#include <sstream>
+#include <string>
+#include <vec2.hpp>
+#include <vec3.hpp>
+#include <vec4.hpp>
 #include <vector>
 
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
-#include "glm/gtx/string_cast.hpp"
-
-/// Vertex
-class Vertex
-{
-public:
+// Vertex
+class Vertex {
+   public:
     Vertex();
     ~Vertex();
 
-public:
+   public:
     glm::vec3 position;
     glm::vec4 color;
     glm::vec3 normal;
@@ -27,14 +23,13 @@ public:
     unsigned int index;
 };
 
-/// Mesh
-class Mesh
-{
-public:
+// Mesh
+class Mesh {
+   public:
     Mesh();
     ~Mesh();
 
-public:
+   public:
     std::vector<glm::vec3> positions;
     std::vector<glm::vec4> colors;
     std::vector<glm::vec3> normals;
@@ -42,39 +37,34 @@ public:
 
     std::vector<unsigned int> indices;
 
-    std::vector<Vertex> vertices; //
+    std::vector<Vertex> vertices;  //
 };
 
-/// Triangle
-class Triangle : public Mesh
-{
-public:
+// Triangle
+class Triangle : public Mesh {
+   public:
     Triangle();
     ~Triangle();
 
-public:
+   public:
     void setPositions(glm::vec3 a, glm::vec3 b, glm::vec3 c);
     void setColor(glm::vec4 c);
-
 };
 
-/// Quadrilateral
+// Quadrilateral
 //  d_______c
 //   |      |
 //   |      |
 //  a|______|b
 //
 // triangle (a,b,c) + triangle (a,c,d)
-//
-class Quadrilateral : public Mesh
-{
-public:
+
+class Quadrilateral : public Mesh {
+   public:
     Quadrilateral();
     ~Quadrilateral();
 
-public:
+   public:
     void setPositions(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 d);
     void setColor(glm::vec4 c);
 };
-
-
