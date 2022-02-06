@@ -74,8 +74,8 @@ GLWidget::~GLWidget() {
 
     f->initializeOpenGLFunctions();
 
-    f->glDeleteBuffers(nQuad, &vbos[0]);
-    f->glDeleteVertexArrays(nQuad, &vaos[0]);
+    f->glDeleteBuffers(1, &vbos[0]);
+    f->glDeleteVertexArrays(1, &vaos[0]);
 
     f->glDeleteBuffers(1, &vbo);
     f->glDeleteVertexArrays(1, &vao);
